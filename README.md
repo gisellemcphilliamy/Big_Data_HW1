@@ -1,5 +1,7 @@
 # Homework 1: Learning Distributed/Parallel Big Data Computing with Hadoop and/or Spark MapReduce: Option 1.1 
 
+Report in README
+
 ## Environment Setup Review 
 
 ### Prerequisites
@@ -248,3 +250,23 @@ Here are the results:
 2. **Algorithm Choice**: Simple word count scales better; average frequency provides richer insights
 3. **Scaling Behavior**: Near-linear scaling demonstrates MapReduce effectiveness
 4. **Resource Utilization**: Proper partitioning crucial for performance optimization
+
+# Resources & Citations
+
+* Apache Spark. (n.d.). *RDD Programming Guide*. Retrieved from [https://spark.apache.org/docs/latest/rdd-programming-guide.html](https://spark.apache.org/docs/latest/rdd-programming-guide.html)
+
+* Apache Spark. (n.d.). *PySpark RDD API Documentation*. Retrieved from [https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.RDD.html](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.RDD.html)
+
+* Apache Spark. (n.d.). *Spark Programming Guide – Word Count Example*. Retrieved from [https://spark.apache.org/examples.html](https://spark.apache.org/examples.html)
+
+* Stack Overflow. (2014). *PySpark Word Count Implementation*. Retrieved from [https://stackoverflow.com/questions/22350722/word-count-program-in-spark](https://stackoverflow.com/questions/22350722/word-count-program-in-spark)
+
+* Apache Spark. (n.d.). *Spark Configuration Documentation*. Retrieved from [https://spark.apache.org/docs/latest/configuration.html](https://spark.apache.org/docs/latest/configuration.html)
+
+* Stack Overflow. (2016). *Spark Performance Tuning – Number of partitions in RDD and performance*. Retrieved from [https://stackoverflow.com/questions/35800795/number-of-partitions-in-rdd-and-performance-in-spark](https://stackoverflow.com/questions/35800795/number-of-partitions-in-rdd-and-performance-in-spark)
+
+* Dean, J., & Ghemawat, S. (2008). *MapReduce: Simplified data processing on large clusters*. Communications of the ACM, 51(1), 107–113. [https://doi.org/10.1145/1327452.1327492](https://doi.org/10.1145/1327452.1327492)
+
+* Apache Spark. (n.d.). *Cluster Mode Overview*. Retrieved from [https://spark.apache.org/docs/latest/cluster-overview.html](https://spark.apache.org/docs/latest/cluster-overview.html)
+
+* Zaharia, M., Chowdhury, M., Das, T., Dave, A., Ma, J., McCauley, M., ... & Stoica, I. (2016). *Apache Spark: A unified engine for big data processing*. Communications of the ACM, 59(11), 56–65. [https://doi.org/10.1145/2934664](https://doi.org/10.1145/2934664)
