@@ -56,6 +56,12 @@ Calculate average word frequency per document
 - Performance comparison across identical datasets
 
 ## Results Analysis
+The following graph depicts the realaitonship between the number of partitions used and the final run-time based on the dataset size:
+![](/graph1.png)
+Next I reviewed how the dataset size as a whole affects the runtime: 
+![](/graph2.png)
+I then competed a complete runtime analysis that compares the runtime for each dataset at all defined partition amounts: 
+![](/graph4.png)
 
 ### Key Findings
 
