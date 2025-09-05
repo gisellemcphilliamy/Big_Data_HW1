@@ -72,70 +72,175 @@ I additionally completed an analysis of my other two methods that I made in orde
 ## Word Count / Average Frequency Algorithms Runtime Analysis
 The following graph depicts the realaitonship between the number of partitions used and the final run-time based on the dataset size:
 ![](/graph1.png)
+
+Across all four datasets, the runtime appears lowest around 8 partitions with 2 closly following in smaller datasets and looking under-parallelized in larger ones. Additionally across the board we can see that 32 partitions results in a heavy increase to runtime. I hypothesize that moving from 2→8 partitions improves core utilization for the datasets greater than or equal to 1k in size. For the 100, super small dataset, I believe that using too many cores splits up data too much, when just 2 would suffice / be optimal it seems. This graph also shows that jumping to 32 partitions introduces higher scheduling and shuffle overhead with many tiny tasks. The “Avg Frequency” line is consistently a bit higher than “Word Count,” which I suspect comes from an extra computations in the algorithm. The effect seems more pronounced on the larger datasets, perhaps because overhead amortizes differently as data volume scales. Overall, it seems that 8 partitions is the most optimal. 
+
 Next I reviewed how the dataset size as a whole affects the runtime: 
 ![](/graph2.png)
+
+For each fixed partition count, the curves look roughly linear, in some cases exponential, in dataset size. This seems consistent with O(n)-like behavior for both algorithms. A clear trend we can see in these graphs is that as the dataset size increases the runtime also increases, no matter what partition is being used. This graph also shows that 8 partitions seems to be the most optimal, potentially using available cores better and minimizing overhead.  With only 2 partitions, large datasets seem to suffer. With 32 partitioins, small datasets may pay a disproportionate scheduling/serialization cost. The small gap where “Avg Frequency” runs slower than “Word Count” can also be seen again. 
+
 I then competed a complete runtime analysis that compares the runtime for each dataset at all defined partition amounts: 
 ![](/graph3.png)
+
+This bar chart further exhibits the pattern: it becomes clear that the 8-partition map reduce configuration is the most efficient. Most certainly this is the case for the datasets tested that have over or equal to 1k files. In the 100 file dataset case, we see that 2 partitions slightly outperforms 8, this is likely due to increased overhead / splitting of tasks that leveraging all 8 cores to process such a small dataset does. It seems that overall the 2-partitions cases seem to struggle on bigger datasets, when it comes to comparing it to the best performing, 8 partitions. Additionally across the board it seems that 32 partitions drastically performs the wrost and slows the runtime performance. As my computer has 8 cores I beleive that 32 partitoins may introduce extra shuffle and task-setup costs that don’t pay off for datasets of the sizes tests. 
+
+Additionally we can see that the word count algorithm has a consistently better runtime than the average frequency algorithm. I’d attribute this to differences in constant factors such as aggregation steps or object creation. Taken together, the results seem consistent with near-linear scaling in input size, with runtime primarily determined by the partition number and dataset size.
 
 #### 1. Scaling Performance
 - Linear Scaling: Runtime increases with dataset size as expected 
 - Best Partition Count: 8 partitions generally perform best for larger datasets
-- Diminishing Returns: Eventually as partitions continues to double, the runtime is not halved - there is a plateau in the performace gain from increasing the partition count
+- Diminishing Returns: Eventually as partitions continues to double, the runtime is not halved - there is a plateau in the performace gain from increasing the partition count. In an extreme case, which is seen using 32 partitions, we see increasing partitions significantly increase runtime as well. 
 
 #### 2. Algorithm Performance Comparison
-- Word Count MapReduce: Better for large datasets due to simpler aggregation
-- Average Frequency MapReduce: Higher computational overhead, seen in large runtime differences with less partitions, but provides meaningful insights
-- Memory Usage: The average frequency map reduce computations required more intermediate storage + runtime 
+- Word Count MapReduce: Better for large datasets in terms of running time likley due to simpler aggregation
+- Average Frequency MapReduce: Seems to have a higher computational overhead, seen in large runtime differences with less partitions, but provides meaningful insights
 
 #### 3. Partition Optimization Effects
-- Under-partitioning (2 partitions): CPU cores were under used resulting in a slower runtime performance that was especially large with methods that had higher computation costs (the average frequency method)
+- Under-partitioning (2 partitions): CPU cores were under used resulting in a slower runtime performance that was especially slow with larger datasets
 - Optimal Partitioning (8 partitions): Matches available cores in my computer and resulted in the best runtime values for all methods  
-- Over-partitioning: Would increase coordination overhead (not tested due to core limitations)
+- Over-partitioning (32 partitions): Seemed to increase overhead by splitting up calls too much - significant runtime increas. 
 
 ### Performance Metrics Summary
 
 | Dataset Size | Optimal Partitions | Best Algorithm | Runtime Range |
 |--------------|-------------------|----------------|---------------|
-| 100 files    | 4-8              | Word Count     | 0.1-0.3s     |
+| 100 files    | 2-8              | Word Count     | 0.1-0.3s     |
 | 1,000 files  | 8                | Word Count     | 0.2-0.6s     |
 | 5,000 files  | 8                | Word Count     | 0.8-2.1s     |
 | 97,000 files | 8                | Word Count     | 15-45s       |
 
-## Technical Implementation Details
+## Map Reduce to solve printing top 30 words occuring in the most files problem: 
 
-### Map Function Design
-```python
-def word_map_gen(path):
-    # Read file, normalize text, extract words 3+ chars
-    text = Path(path).read_text(encoding="utf-8", errors="ignore").lower()
-    words = re.findall(r'\b[a-zA-Z]{3,}\b', text)
-    return list(Counter(words).items())
-```
+This was implemented two times (discuessed above) 
+Here are the results: 
+100 files
+   1. 'the         'appears in   97 of files 100)
+   2. 'and         'appears in   93 of files 100)
+   3. 'for         'appears in   87 of files 100)
+   4. 'with        'appears in   81 of files 100)
+   5. 'that        'appears in   78 of files 100)
+   6. 'this        'appears in   76 of files 100)
+   7. 'from        'appears in   74 of files 100)
+   8. 'have        'appears in   70 of files 100)
+   9. 'are         'appears in   69 of files 100)
+  10. 'will        'appears in   67 of files 100)
+  11. 'was         'appears in   65 of files 100)
+  12. 'has         'appears in   61 of files 100)
+  13. 'not         'appears in   54 of files 100)
+  14. 'all         'appears in   54 of files 100)
+  15. 'their       'appears in   53 of files 100)
+  16. 'but         'appears in   53 of files 100)
+  17. 'one         'appears in   53 of files 100)
+  18. 'which       'appears in   53 of files 100)
+  19. 'also        'appears in   51 of files 100)
+  20. 'can         'appears in   48 of files 100)
+  21. 'you         'appears in   47 of files 100)
+  22. 'time        'appears in   47 of files 100)
+  23. 'they        'appears in   46 of files 100)
+  24. 'there       'appears in   45 of files 100)
+  25. 'more        'appears in   44 of files 100)
+  26. 'other       'appears in   44 of files 100)
+  27. 'first       'appears in   43 of files 100)
+  28. 'new         'appears in   43 of files 100)
+  29. 'out         'appears in   43 of files 100)
+  30. 'over        'appears in   43 of files 100)
 
-### Reduce Function Strategy
-- Word Count: Simple addition `lambda a, b: a + b`
-- Average Frequency: Tuple aggregation `lambda a, b: (a[0] + b[0], a[1] + b[1])`
+1000 files
+   1. 'the         'appears in  972 of files 1000)
+   2. 'and         'appears in  951 of files 1000)
+   3. 'for         'appears in  868 of files 1000)
+   4. 'with        'appears in  826 of files 1000)
+   5. 'that        'appears in  756 of files 1000)
+   6. 'from        'appears in  688 of files 1000)
+   7. 'this        'appears in  685 of files 1000)
+   8. 'are         'appears in  631 of files 1000)
+   9. 'has         'appears in  626 of files 1000)
+  10. 'have        'appears in  619 of files 1000)
+  11. 'was         'appears in  582 of files 1000)
+  12. 'will        'appears in  571 of files 1000)
+  13. 'their       'appears in  532 of files 1000)
+  14. 'also        'appears in  501 of files 1000)
+  15. 'all         'appears in  492 of files 1000)
+  16. 'but         'appears in  483 of files 1000)
+  17. 'not         'appears in  482 of files 1000)
+  18. 'can         'appears in  481 of files 1000)
+  19. 'one         'appears in  475 of files 1000)
+  20. 'more        'appears in  471 of files 1000)
+  21. 'which       'appears in  470 of files 1000)
+  22. 'they        'appears in  449 of files 1000)
+  23. 'you         'appears in  428 of files 1000)
+  24. 'about       'appears in  418 of files 1000)
+  25. 'who         'appears in  409 of files 1000)
+  26. 'other       'appears in  404 of files 1000)
+  27. 'after       'appears in  402 of files 1000)
+  28. 'out         'appears in  400 of files 1000)
+  29. 'said        'appears in  392 of files 1000)
+  30. 'time        'appears in  391 of files 1000)
 
-### Error Handling
-- File encoding errors handled and printed as errors
-- Missing files skipped with logging
-- Memory management for large datasets
+5000 files
+   1. 'the         'appears in 4872 of files 5000)
+   2. 'and         'appears in 4758 of files 5000)
+   3. 'for         'appears in 4407 of files 5000)
+   4. 'with        'appears in 4112 of files 5000)
+   5. 'that        'appears in 3892 of files 5000)
+   6. 'this        'appears in 3480 of files 5000)
+   7. 'from        'appears in 3477 of files 5000)
+   8. 'are         'appears in 3214 of files 5000)
+   9. 'has         'appears in 3193 of files 5000)
+  10. 'have        'appears in 3135 of files 5000)
+  11. 'was         'appears in 2938 of files 5000)
+  12. 'will        'appears in 2802 of files 5000)
+  13. 'their       'appears in 2619 of files 5000)
+  14. 'also        'appears in 2592 of files 5000)
+  15. 'more        'appears in 2467 of files 5000)
+  16. 'not         'appears in 2426 of files 5000)
+  17. 'one         'appears in 2422 of files 5000)
+  18. 'but         'appears in 2395 of files 5000)
+  19. 'which       'appears in 2386 of files 5000)
+  20. 'all         'appears in 2377 of files 5000)
+  21. 'can         'appears in 2348 of files 5000)
+  22. 'they        'appears in 2296 of files 5000)
+  23. 'about       'appears in 2108 of files 5000)
+  24. 'new         'appears in 2099 of files 5000)
+  25. 'been        'appears in 2065 of files 5000)
+  26. 'you         'appears in 2063 of files 5000)
+  27. 'other       'appears in 2059 of files 5000)
+  28. 'after       'appears in 2052 of files 5000)
+  29. 'who         'appears in 2041 of files 5000)
+  30. 'its         'appears in 2020 of files 5000)
 
-## Experimental Results Discussion
-
-### Scalability Analysis
-1. CPU Utilization: 8 partitions effectively utilize 8-core system
-2. Memory Efficiency: Spark's lazy evaluation prevents memory overflow
-3. I/O Bottleneck: File reading becomes limiting factor for very large datasets
-
-### Algorithm Trade-offs
-- Simple Word Count: O(n) complexity, minimal memory overhead
-- Average Frequency: O(n) complexity but higher constant factors, more memory for intermediate results
-
-### Real-world Implications
-- For production systems: Choose algorithm based on analysis goals
-- For large-scale deployment: Consider distributed file systems (HDFS)
-- For memory-constrained environments: Prefer simple word count approach
+9653 files
+   1. 'the         'appears in 9423 of files 9653)
+   2. 'and         'appears in 9155 of files 9653)
+   3. 'for         'appears in 8505 of files 9653)
+   4. 'with        'appears in 7977 of files 9653)
+   5. 'that        'appears in 7538 of files 9653)
+   6. 'from        'appears in 6778 of files 9653)
+   7. 'this        'appears in 6687 of files 9653)
+   8. 'has         'appears in 6227 of files 9653)
+   9. 'are         'appears in 6132 of files 9653)
+  10. 'have        'appears in 6103 of files 9653)
+  11. 'was         'appears in 5645 of files 9653)
+  12. 'will        'appears in 5439 of files 9653)
+  13. 'their       'appears in 5081 of files 9653)
+  14. 'also        'appears in 5061 of files 9653)
+  15. 'more        'appears in 4724 of files 9653)
+  16. 'not         'appears in 4687 of files 9653)
+  17. 'one         'appears in 4683 of files 9653)
+  18. 'which       'appears in 4636 of files 9653)
+  19. 'but         'appears in 4632 of files 9653)
+  20. 'can         'appears in 4560 of files 9653)
+  21. 'all         'appears in 4531 of files 9653)
+  22. 'they        'appears in 4365 of files 9653)
+  23. 'new         'appears in 4120 of files 9653)
+  24. 'about       'appears in 4065 of files 9653)
+  25. 'been        'appears in 4058 of files 9653)
+  26. 'after       'appears in 4042 of files 9653)
+  27. 'who         'appears in 3990 of files 9653)
+  28. 'other       'appears in 3984 of files 9653)
+  29. 'you         'appears in 3957 of files 9653)
+  30. 'its         'appears in 3924 of files 9653)
 
 ## Conclusions
 
@@ -143,13 +248,3 @@ def word_map_gen(path):
 2. **Algorithm Choice**: Simple word count scales better; average frequency provides richer insights
 3. **Scaling Behavior**: Near-linear scaling demonstrates MapReduce effectiveness
 4. **Resource Utilization**: Proper partitioning crucial for performance optimization
-
-## File Structure
-```
-project/
-├── hw1.ipynb          # Main analysis notebook
-├── mapreduce_results.csv   # Performance results
-├── social_animal_data/     # Input dataset directory
-├── README.md              # This file
-└── analysis_plots.png     # Generated visualizations
-```
