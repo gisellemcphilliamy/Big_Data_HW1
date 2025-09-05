@@ -30,7 +30,7 @@ pip install pyspark pandas jupyter matplotlib seaborn
 
 In this Homework I run the map-reduce program on 4 different sized datasets with varying reducers and mappers. I also use map reduce to print the top 30 words occuring in the most files for 4 datasets of sizes [100, 1k, 5k, 9.7k]. Additionally I review the runtime on all of these analysis to understand the performance data and show various variables affects on runtime performance of the MapReduce job. 
 
-### MapReduce Implementations
+### MapReduce Implementations 
 
 #### 1. Word Count MapReduce (`mapreduce_wrd_count`)
 Counts total word frequency across all documents
@@ -44,26 +44,38 @@ Calculate average word frequency per document
 - Reduce Phase: Calculate average frequency = total_occurrences / documents_containing_word
 - Output: Top 30 words with highest average frequency per document
 
-## Experimental Design
+#### 3. Top 30 words occuring most in a document (`mapreduce_doc_frequency`)
+Calculate the top 30 words occuring in most documents / files 
+- Map Phase: Processes each document to build a set of unique words across all documents 
+- Reduce Phase: Calculates how many documents each word appears in 
+- Output: A sorted list that is 30 words long containing the most common words across all documents
 
 ### Dataset Configurations
 1. Dataset Size Scaling: 100 → 1000 → 5000 → 9653 files
-2. Partition Variations: 2, 4, 8 partitions per dataset
+2. Partition Variations: 2, 8, 32 partitions per dataset
 
 ### Algorithm Comparison
-- Same problem (word analysis) solved with two different MapReduce approaches
-- Different computational complexity and memory usage patterns
-- Performance comparison across identical datasets
+- Same problem (word document frequency) solved with two different MapReduce approaches ( one using 1 mapreduce job and one using 3)
+- Additionally I also used map reduce to solve two other problems being printing the word count and average word count per document problems.
+- Between all 4 mapreduce algorithm I saw strong differences between memory usage patterns and overall runtime. 
+- I also completed performance comparison across identical datasets with varying partitions
 
-## Results Analysis
+Document Frequency Analysis: 
+I compared two mapreduce algorithms both solving the same problem, and varied how many mapreduce jobs they both compute. One had 1 job while hte other had 3. Very interestingly the 3-job map-reduce algorithm consistently yeiled lower runtimes than the 1-job algorithm. In my single job algo i use a python set in order to gather unqiue words, and convert it to a list. I beleive that this is causing increased memory overhead that outweights the benefit of using less map reduce jobs. Additionally in the 3-job algo I use spark's optimized functions which could also help in the improved runtime. The runtime outputs (in seconds) can be seen below: 
+
+| Approach  / DS size            | 100   | 1000  | 5000  | 9653  |
+|:----------------------|------:|------:|------:|------:|
+| Single-Job MapReduce  | 0.089 | 0.125 | 0.338 | 0.551 |
+| Three-Job MapReduce   | 0.134 | 0.194 | 0.538 | 0.924 |
+
+I additionally completed an analysis of my other two methods that I made in order to understand how partitions / dataset size affect runtime: 
+## Word Count / Average Frequency Algorithms Runtime Analysis
 The following graph depicts the realaitonship between the number of partitions used and the final run-time based on the dataset size:
 ![](/graph1.png)
 Next I reviewed how the dataset size as a whole affects the runtime: 
 ![](/graph2.png)
 I then competed a complete runtime analysis that compares the runtime for each dataset at all defined partition amounts: 
 ![](/graph3.png)
-
-### Key Findings
 
 #### 1. Scaling Performance
 - Linear Scaling: Runtime increases with dataset size as expected 
