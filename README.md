@@ -67,8 +67,8 @@ I compared two mapreduce algorithms both solving the same problem, and varied ho
 
 | Approach  / DS size            | 100   | 1000  | 5000  | 9653  |
 |:----------------------|------:|------:|------:|------:|
-| Single-Job MapReduce  | 0.089 | 0.125 | 0.338 | 0.551 |
-| Three-Job MapReduce   | 0.134 | 0.194 | 0.538 | 0.924 |
+| Single-Job MapReduce  | 0.357 | 0.158 | 0.472 | 0.764 |
+| Three-Job MapReduce   | 0.170 | 0.208 | 0.546 | 0.953 |
 
 I additionally completed an analysis of my other two methods that I made in order to understand how partitions / dataset size affect runtime: 
 ## Word Count / Average Frequency Algorithms Runtime Analysis
